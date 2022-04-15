@@ -21,6 +21,8 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+char reply;
+//reply - глобальная переменная, используемая циклом while после функции
 int main(int argc,char *argv[])
 //Функция калькулятора
 {
@@ -29,22 +31,10 @@ int main(int argc,char *argv[])
 		setvbuf(stdout, NULL, _IONBF, 0);
 		setvbuf(stderr, NULL, _IONBF, 0);
 		FILE *test;
-		printf("Здравствуйте, я Калькулятор (^-^).Я умею выполнять следующие действия: \n");
-		printf("Складывать'+' \n");
-		printf("Вычитать'-' \n");
-		printf("Умножать'*' \n");
-		printf("Делить'/' \n");
-		printf("Возводить в степень'^' \n");
-		printf("Находить факториал'!' \n");
-		printf("Складывать вектора(v)'+' \n");
-		printf("Вычитать вектора(v)'-' \n");
-		printf("Скалярное произведение векторов(v)'*' \n");
-		// Приветствие и оглашение функционала
 		test = fopen ("test.txt","r");
-		char reply, c, mode;
-		//Глобальная переменная, используемая циклом while после функции
+		char c, mode;
 		//с - символ операции, mode - режим работы программы
-		fscanf(test, " %[+-*/^!]", &c);
+		fscanf(test, " %c", &c);
 		fscanf(test, " %c", &mode);
 		if(mode == 'v')
 		//Проверяем символ введенный пользователем для выбора режима
@@ -64,7 +54,7 @@ int main(int argc,char *argv[])
 			//Цикл, отвечающий за ввод коодинат первого вектора
 			for(int i = 0; i<size; i++)
 			{
-				fscanf(test, "%lf", &av[i]);
+				fscanf(test, "%lf", &bv[i]);
 			}
 			//Цикл, отвечающий за ввод коодинат второго вектора
 			fclose(test);
@@ -73,10 +63,24 @@ int main(int argc,char *argv[])
 			{
 				case '+':
 				//Блок отвечающий за сложение векторов
+					printf("(");
 					for(int i = 0; i<size; i++)
 					{
-						printf("%lf; ", av[i]+bv[i]);
+						printf("%lf ", av[i]);
 					}
+					printf(") +");
+					printf(" (");
+					for(int i = 0; i<size; i++)
+					{
+						printf("%lf ", bv[i]);
+					}
+					printf(") = ");
+					printf("(");
+					for(int i = 0; i<size; i++)
+					{
+						printf("%lf ", av[i]+bv[i]);
+					}
+					printf(")");
 					//Цикл, выполняющий действие и выводящий результат в строку через ';'
 					free(av);
 					free(bv);
@@ -84,10 +88,24 @@ int main(int argc,char *argv[])
 					break;
 				case '-':
 				//Блок отвечающий за вычитание векторов
+					printf("(");
 					for(int i = 0; i<size; i++)
 					{
-						printf("%lf; ", av[i]-bv[i]);
+						printf("%lf ", av[i]);
 					}
+					printf(") -");
+					printf(" (");
+					for(int i = 0; i<size; i++)
+					{
+						printf("%lf ", bv[i]);
+					}
+					printf(") = ");
+					printf("(");
+					for(int i = 0; i<size; i++)
+					{
+						printf("%lf ", av[i]-bv[i]);
+					}
+					printf(")");
 					//Цикл, выполняющий действие и выводящий результат в строку через ';'
 					free(av);
 					free(bv);
@@ -100,7 +118,19 @@ int main(int argc,char *argv[])
 						resv += av[i]*bv[i];
 					}
 					//Цикл выполняющий действие
-					printf("%lf*lf = lf\n",av, bv, resv);
+					printf("(");
+					for(int i = 0; i<size; i++)
+					{
+						printf("%lf ", av[i]);
+					}
+					printf(") *");
+					printf(" (");
+					for(int i = 0; i<size; i++)
+					{
+						printf("%lf ", bv[i]);
+					}
+					printf(") = ");
+					printf("%lf\n", resv);
 					free(av);
 					free(bv);
 					//Освобождение памяти
@@ -113,40 +143,40 @@ int main(int argc,char *argv[])
 					//написать разработчику
 					break;
 			}
+			printf("Вычислить что-то еще?0-0\n");
+			printf("(Введите 'y' чтобы продолжить, или любой другой символ чтобы закончить)");
 			scanf(" %c",&reply);
 		}
-		else
+		else if (mode == 's')
 		{
 			double a, b, res;
 			fscanf(test, "%lf", &a);
 			fscanf(test, "%lf", &b);
 			fclose(test);
-			printf("Введите первое число(целый факториал): ");
-			printf("Введите действие('+','-','*','/','^','!'):");
 			switch(c)
 			//Разбиваем на действия в зависимости от выбора пользователя
 			{
 				case '+':
 				//Этот блок отвечает за выполнение операции сложения
-					printf("%lf+%lf = %lf\n",a,b, a+b);
+					printf("%lf + %lf = %lf\n",a,b, a+b);
 					//Пользователь вводит вторую переменную, после чего выводится ответ
 					break;
 				case '-':
 				//Этот блок отвечает за выполнение операции вычитания
-					printf("%lf-%lf = %lf\n",a,b, a-b);
+					printf("%lf - %lf = %lf\n",a,b, a-b);
 					break;
 				case '*':
 				//Этот блок отвечает за выполнение операции умножения
-					printf("%lf*%lf = %lf\n",a,b, a*b);
+					printf("%lf * %lf = %lf\n",a,b, a*b);
 					break;
 				case '/':
 				//Этот блок отвечает за выполнение операции деления
-					printf("%lf/%lf = %lf\n",a,b,a/b);
+					printf("%lf / %lf = %lf\n",a,b,a/b);
 					break;
 				case '^':
 				//Этот блок отвечает за выполнение операции возведения в степень
 				//может рассчитать только положительную целую степень
-					if(b>=0)
+					if(b>0)
 					{
 						res = a;
 						for(int i = 1;i<b;i++)
@@ -154,6 +184,13 @@ int main(int argc,char *argv[])
 						{
 							res = res*a;
 						}
+						printf("%lf^%.0lf = %lf\n",a,b,res);
+						break;
+					}
+					else if(b == 0)
+					{
+					//Если степень равна нулю, то ответ равен 1
+						res = 1;
 						printf("%lf^%.0lf = %lf\n",a,b,res);
 						break;
 					}
@@ -210,6 +247,12 @@ int main(int argc,char *argv[])
 		printf("Вычислить что-то еще?0-0\n");
 		printf("(Введите 'y' чтобы продолжить, или любой другой символ чтобы закончить)");
 		scanf(" %c",&reply);
+		}
+		else
+		{
+			printf("Неизвестный режим операций, пожалуйста, введите 'v' или 's'\n");
+			printf("(Введите 'y' чтобы продолжить, или любой другой символ чтобы закончить)");
+			scanf(" %c",&reply);
 		}
 	}
 	while(reply == 'y');
