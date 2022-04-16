@@ -31,15 +31,18 @@ int main(int argc,char *argv[])
 		setvbuf(stdout, NULL, _IONBF, 0);
 		setvbuf(stderr, NULL, _IONBF, 0);
 		printf("Здравствуйте, я Калькулятор (^-^)\n");
-		printf("Прежде чем приступить к работе, советую прочитать файл README с инструкцией по использованию\n");
+		printf("Прежде чем приступить к работе, советую прочитать README с инструкцией по использованию\n");
 		FILE *input, *output;
 		char input_name[259], output_name[259];
+		//Переменные для записи имени файлов
 		printf("Введите название файла формата '.txt', из которого я буду брать данные:");
 		scanf("%s", input_name);
 		printf("Введите название файла формата '.txt', в который я запишу результаты:");
 		scanf("%s", output_name);
+		//Ввод имени файлов для чтения и записи
 		input = fopen (input_name,"r");
 		output = fopen (output_name,"w");
+		//Открытие файлов для чтение и записи
 		char c, mode;
 		//с - символ операции, mode - режим работы программы
 		fscanf(input, " %c", &c);
