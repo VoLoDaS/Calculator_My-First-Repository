@@ -45,7 +45,7 @@ int main(int argc,char *argv[])
 		//Открытие файлов для чтение и записи
 		char operation, mode;
 		//operation - символ операции, mode - режим работы программы
-		while(fscanf(input, "%c %c", &operation, &mode) != EOF)
+		while(fscanf(input, " %c %c", &operation, &mode) != EOF)
 	    //Этот while считывает строчки с данными(то есть несколько действий) до тех пор пока они не закончатся
 		{
 			if(mode == 'v')
@@ -62,9 +62,12 @@ int main(int argc,char *argv[])
 				for(int i = 0; i<size; i++)
 				{
 					fscanf(input, "%lf", &av[i]);
+				}
+				for(int i = 0; i<size; i++)
+				{
 					fscanf(input, "%lf", &bv[i]);
 				}
-				//Цикл, отвечающий за ввод коодинат векторов
+				//Циклы, отвечающие за ввод коодинат векторов
 				switch(operation)
 				//switch для выполнения действия выбранного пользователем
 				{
@@ -85,7 +88,7 @@ int main(int argc,char *argv[])
 						{
 							fprintf(output, "%lf ", av[i]+bv[i]);
 						}
-						fprintf(output, ")");
+						fprintf(output, ")\n");
 						//Циклы, выполняющие действие и выводящие результат в правильном виде
 						free(av);
 						free(bv);
@@ -108,7 +111,7 @@ int main(int argc,char *argv[])
 						{
 							fprintf(output, "%lf ", av[i]-bv[i]);
 						}
-						fprintf(output, ")");
+						fprintf(output, ")\n");
 						//Циклы, выполняющие действие и выводящие результат в правильном виде
 						free(av);
 						free(bv);
