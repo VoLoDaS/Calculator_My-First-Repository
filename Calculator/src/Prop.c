@@ -19,13 +19,36 @@
                          Язык интерфейса: Русский
  ============================================================================
  */
+typedef struct listAction
+{
+	char operation, mode;
+	double *av, *bv, resv;
+	int size;
+	double a, b, res;
+	struct listAction *nextAction;
+} iAction;
+typedef struct list
+{
+	iAction *head;
+	iAction *current;
+} list;
+iAction *nextAction(list *curr)
+{
+	iAction *next = curr->current->nextAction;
+	curr->current =  next;
+	return next;
+}
+int listAppend(list)
+{
+
+}
 #include <stdio.h>
 #include <stdlib.h>
-char reply;
 //reply - глобальная переменная, используемая циклом while после функции
 int main(int argc,char *argv[])
 //Функция калькулятора
 {
+	char reply;
 	do
 	{
 		setvbuf(stdout, NULL, _IONBF, 0);
