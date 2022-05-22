@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 typedef struct listElement
+//Структура элемента списка(действие)
 {
 	char operation, mode;
 	double *av, *bv, *resv;
@@ -360,3 +361,4 @@ int main(int argc,char *argv[])
 	printf("Приходите еще!(^-^)/");
 	return 0;
 }
+
