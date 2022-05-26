@@ -120,7 +120,7 @@ int main(int argc,char *argv[])
 			else if (mode == 's')
 			{
 				fscanf(input, "%lf", &newAction->a);
-				fscanf(input, "%lf", &newAction->b);
+				if(operation != '!') fscanf(input, "%lf", &newAction->b);
 			}
 			listAppend(actions, newAction);
 		}
@@ -132,7 +132,7 @@ int main(int argc,char *argv[])
 			if(actions->current->mode == 'v')
 			{
 				thisAction->resv = malloc(thisAction->size*sizeof(double));
-				switch(operation)
+				switch(actions->current->operation)
 				//switch для выполнения действия выбранного пользователем
 				{
 					case '+':
@@ -157,7 +157,7 @@ int main(int argc,char *argv[])
 			}
 			else if (actions->current->mode == 's')
 			{
-				switch(operation)
+				switch(actions->current->operation)
 				//Разбиваем на действия в зависимости от выбора пользователя
 				{
 					case '+':
@@ -233,7 +233,7 @@ int main(int argc,char *argv[])
 			iElement *thisAction = actions->current;
 			if(actions->current->mode == 'v')
 			{
-				switch(operation)
+				switch(actions->current->operation)
 				//switch для выполнения действия выбранного пользователем
 				{
 					case '+':
@@ -283,7 +283,7 @@ int main(int argc,char *argv[])
 			}
 			else if (actions->current->mode == 's')
 			{
-				switch(operation)
+				switch(actions->current->operation)
 				//Разбиваем на действия в зависимости от выбора пользователя
 				{
 					case '+':
