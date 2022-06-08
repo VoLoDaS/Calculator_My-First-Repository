@@ -31,17 +31,20 @@ typedef struct listElement
 	struct listElement *nextElement;
 } iElement;
 typedef struct list
+//Структура Список, имеет указатели на первый и текущий элемент
 {
 	iElement *head;
 	iElement *current;
 } list;
 iElement *nextElement(list *inList)
+//Функция для перехода к следующему элементу списка
 {
 	iElement *next = inList->current->nextElement;
 	inList->current =  next;
 	return next;
 }
 int listAppend(list *inList, iElement *newElement)
+//Функция для добавления нового элемента в список
 {
 	if(inList->head == NULL)
 	{
@@ -54,11 +57,13 @@ int listAppend(list *inList, iElement *newElement)
 	return 0;
 }
 int goHeadElement(list *inList)
+//Функция для перехода из тукущего элемента списка к первому
 {
 	inList->current =  inList->head;
 	return 0;
 }
 int deleteElement(list *inList)
+//Функция для удаления элемента из списка
 {
 	iElement *delete = inList->current;
 	if(delete == inList->head)
@@ -82,6 +87,7 @@ int main(int argc,char *argv[])
 	char reply;
 	//reply - глобальная переменная, используемая циклом while после функции
 	do
+    //Основной цикл, в котором производится работа с файлами, пока пользователь не завершит работу
 	{
 		setvbuf(stdout, NULL, _IONBF, 0);
 		setvbuf(stderr, NULL, _IONBF, 0);
@@ -95,21 +101,24 @@ int main(int argc,char *argv[])
 		scanf("%s", output_name);
 		//Ввод имени файлов для чтения и записи
 		FILE *input = fopen (input_name,"r");
-		//Открытие файлов для чтение и записи
+		//Открытие файла для чтения
 		list *actions = calloc(1, sizeof(list));
+		//Выделение памяти для указателя на список
 		char operation, mode;
+		//Переменные для работы цикла while ниже, где проверяется наличие этих переменных в строке с действием
 		while(fscanf(input, " %c %c", &operation, &mode) != EOF)
-	    //Этот while считывает строчки с данными(то есть несколько действий) до тех пор пока они не закончатся
+	    //Этот while считывает строчки с данными из файла и добавляем в наш список
 		{
 			iElement *newAction = calloc(1, sizeof(iElement));
+			//Выделяем память для указателя на новый элемент списка
 			newAction->operation = operation;
 			newAction->mode = mode;
+			//Присваиваем значения из нового элемента в переменные
 			if(mode == 'v')
 			//Проверяем символ введенный пользователем для выбора режима
 			{
-				//Эта переменная отвечает за размеры выделяемой памяти для векторов и соответсвенно за размеры векторов
-				//Переменные, которым будем присваивать значения векторов
 				fscanf(input, "%i", &newAction->size);
+				//Берем значение из файла для переменной size для нового элемента
 				newAction->av = malloc(newAction->size*sizeof(double));
 				newAction->bv = malloc(newAction->size*sizeof(double));
 				//Выделение памяти под координаты векторов
@@ -120,13 +129,19 @@ int main(int argc,char *argv[])
 			else if (mode == 's')
 			{
 				fscanf(input, "%lf", &newAction->a);
+				//Берем значение первой переменной из файла
 				if(operation != '!') fscanf(input, "%lf", &newAction->b);
+				//Если у нас проходит действие факториала, мы не считываем вторую переменную
 			}
 			listAppend(actions, newAction);
+			//Добавляем новый элемент в список
 		}
 		fclose(input);
+	    //После записи всех данных закрываем файл, чтобы не нагружать память
 		goHeadElement(actions);
+		//Возвращаемся в начало списка к первому элементу для дальнейшей последовательной работы
 		while(actions->current != NULL)
+		//Этот цикл отвечает за выполнение рассчетов результатов считанных ранее действий и сохранения их в соответствующие элементы списка
 		{
 			iElement *thisAction = actions->current;
 			if(actions->current->mode == 'v')
@@ -227,8 +242,11 @@ int main(int argc,char *argv[])
 			nextElement(actions);
 		}
 		goHeadElement(actions);
+		//Возвращаемся в начало списка к первому элементу для дальнейшей последовательной работы
 		FILE *output = fopen (output_name,"w");
+		//Открываем файл для записи реезультатов
 		while(actions->current != NULL)
+		//Этот цикл отвечает за запись результатов в файл в правильной форме
 		{
 			iElement *thisAction = actions->current;
 			if(actions->current->mode == 'v')
@@ -245,8 +263,7 @@ int main(int argc,char *argv[])
 						fprintf(output, ") = (");
 						for(int i = 0; i<thisAction->size; i++) fprintf(output, "%lf ", thisAction->resv[i]);
 						fprintf(output, ")\n");
-						//Циклы, выполняющие действие и выводящие результат в правильном виде
-						//Освобождение памяти
+						//Циклы, выводящие результат в правильном виде
 						break;
 					case '-':
 					//Блок отвечающий за вычитание векторов
@@ -257,8 +274,7 @@ int main(int argc,char *argv[])
 						fprintf(output, ") = (");
 						for(int i = 0; i<thisAction->size; i++) fprintf(output, "%lf ", thisAction->resv[i]);
 						fprintf(output, ")\n");
-						//Циклы, выполняющие действие и выводящие результат в правильном виде
-						//Освобождение памяти
+						//Циклы, выводящие результат в правильном виде
 						break;
 					case '*':
 					//Блок отвечающий за скалярное произведение векторов
@@ -268,8 +284,7 @@ int main(int argc,char *argv[])
 						for(int i = 0; i<thisAction->size; i++) fprintf(output, "%lf ", thisAction->bv[i]);
 						fprintf(output, ") = ");
 						fprintf(output, "%lf\n", thisAction->res);
-						//Циклы, выполняющие действие и выводящие результат в правильном виде
-						//Освобождение памяти
+						//Циклы, выводящие результат в правильном виде
 						break;
 					default:
 						fprintf(output, "Неизвестная операция\n");
@@ -280,6 +295,7 @@ int main(int argc,char *argv[])
 				free(thisAction->av);
 				free(thisAction->bv);
 				free(thisAction->resv);
+				//Освобождение памяти
 			}
 			else if (actions->current->mode == 's')
 			{
@@ -287,25 +303,23 @@ int main(int argc,char *argv[])
 				//Разбиваем на действия в зависимости от выбора пользователя
 				{
 					case '+':
-					//Этот блок отвечает за выполнение операции сложения
+					//Этот блок отвечает за вывод операции сложения
 						fprintf(output, "%lf + %lf = %lf\n",thisAction->a, thisAction->b, thisAction->res);
-						//Пользователь вводит вторую переменную, после чего выводится ответ
 						break;
 					case '-':
-					//Этот блок отвечает за выполнение операции вычитания
+					//Этот блок отвечает за вывод операции вычитания
 						fprintf(output, "%lf - %lf = %lf\n",thisAction->a, thisAction->b, thisAction->res);
 						break;
 					case '*':
-					//Этот блок отвечает за выполнение операции умножения
+					//Этот блок отвечает за вывод операции умножения
 						fprintf(output, "%lf * %lf = %lf\n",thisAction->a, thisAction->b, thisAction->res);
 						break;
 					case '/':
-					//Этот блок отвечает за выполнение операции деления
+					//Этот блок отвечает за вывод операции деления
 						fprintf(output, "%lf / %lf = %lf\n",thisAction->a, thisAction->b, thisAction->res);
 						break;
 					case '^':
-					//Этот блок отвечает за выполнение операции возведения в степень
-					//может рассчитать только положительную целую степень
+					//Этот блок отвечает за вывод операции возведения в степень
 						if(thisAction->b>=0)
 						{
 							fprintf(output, "%lf^%.0lf = %lf\n",thisAction->a,thisAction->b,thisAction->res);
@@ -346,9 +360,12 @@ int main(int argc,char *argv[])
 			//Вывод, если символ типа, с какими данными предстоит работать не соответствует
 			fprintf(output, "\n");
 			deleteElement(actions);
+			//Удаление элемента из списка
 		}
 		free(actions);
+		//Освобождение памяти на указатель на наш список
 		fclose(output);
+		//Закрытие файла для записи
 		printf("Результаты записаны в файл\n");
 		printf("Вычислить что-то еще?0-0\n");
 		printf("(Введите 'y' чтобы продолжить и ввести новые файлы для работы или любой другой символ чтобы закончить)");
