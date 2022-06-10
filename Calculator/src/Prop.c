@@ -108,14 +108,15 @@ int main(int argc,char *argv[])
 		}
 		fclose(input);
 	    //После записи всех данных закрываем файл, чтобы не нагружать память
+		queue *data = calloc(1, sizeof(queue));
 		while(actions->head != NULL)
 		//Этот цикл отвечает за выполнение рассчетов результатов считанных ранее действий и сохранения их в соответствующие элементы очереди
 		{
-			iElement *thisAction = actions->current;
-			if(actions->current->mode == 'v')
+			iElement *thisAction = actions->head;
+			if(actions->head->mode == 'v')
 			{
 				thisAction->resv = malloc(thisAction->size*sizeof(double));
-				switch(actions->current->operation)
+				switch(actions->head->operation)
 				//switch для выполнения действия выбранного пользователем
 				{
 					case '+':
@@ -138,9 +139,9 @@ int main(int argc,char *argv[])
 				}
 
 			}
-			else if (actions->current->mode == 's')
+			else if (actions->head->mode == 's')
 			{
-				switch(actions->current->operation)
+				switch(actions->head->operation)
 				//Разбиваем на действия в зависимости от выбора пользователя
 				{
 					case '+':
@@ -207,19 +208,19 @@ int main(int argc,char *argv[])
 						break;
 				}
 			}
+			queueAppend(data, thisAction);
 			nextElement(actions);
 		}
-		goHeadElement(actions);
-		//Возвращаемся в начало списка к первому элементу для дальнейшей последовательной работы
+		free(actions);
 		FILE *output = fopen (output_name,"w");
 		//Открываем файл для записи реезультатов
-		while(actions->head != NULL)
+		while(data->head != NULL)
 		//Этот цикл отвечает за запись результатов в файл в правильной форме
 		{
-			iElement *thisAction = actions->head;
-			if(actions->head->mode == 'v')
+			iElement *thisAction = data->head;
+			if(data->head->mode == 'v')
 			{
-				switch(actions->head->operation)
+				switch(data->head->operation)
 				//switch для выполнения действия выбранного пользователем
 				{
 					case '+':
@@ -265,9 +266,9 @@ int main(int argc,char *argv[])
 				free(thisAction->resv);
 				//Освобождение памяти
 			}
-			else if (actions->head->mode == 's')
+			else if (data->head->mode == 's')
 			{
-				switch(actions-head->operation)
+				switch(data->head->operation)
 				//Разбиваем на действия в зависимости от выбора пользователя
 				{
 					case '+':
@@ -327,13 +328,13 @@ int main(int argc,char *argv[])
 			else fprintf(output, "Неизвестный режим операций, пожалуйста, введите 'v' или 's'\n");
 			//Вывод, если символ типа, с какими данными предстоит работать не соответствует
 			fprintf(output, "\n");
-			deleteElement(actions);
 			//Удаление элемента из списка
+			nextElement(data);
 		}
-		free(actions);
-		//Освобождение памяти на указатель на наш список
 		fclose(output);
 		//Закрытие файла для записи
+		free(actions);
+		//Освобождение памяти на указатель на наш список
 		printf("Результаты записаны в файл\n");
 		printf("Вычислить что-то еще?0-0\n");
 		printf("(Введите 'y' чтобы продолжить и ввести новые файлы для работы или любой другой символ чтобы закончить)");
