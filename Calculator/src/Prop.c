@@ -28,13 +28,24 @@ typedef struct queueElement
 	double *av, *bv, *resv;
 	int size;
 	double a, b, res;
+	/*
+	 *operation - переменная отвечающая за символ действия
+	 *mode - переменная отвечающая за режим работы с действием, векторный или обычный
+	 *av, bv - переменные для хранения значений векторов
+	 *resv - переменная для хранения результата действия между векторами
+	 *size - переменная отвечающая за размерность векторов
+	 *a, b - переменные отвечающие за хранение значений в обычном режиме
+	 *res - переменная для хранения результата действия между переменными
+	 */
 	struct queueElement *nextElement;
 } iElement;
 typedef struct queue
 //Структура Очереди, имеет указатели на первый и текущий элемент
 {
 	iElement *head;
+	//Указатель на на начало очереди (голову)
 	iElement *last;
+	//Указатель на конец очереди (хвост)
 } queue;
 iElement *nextElement(queue *inQueue)
 //Функция для получения первого элемента из очереди(головы)
@@ -113,9 +124,11 @@ int main(int argc,char *argv[])
 		//Этот цикл отвечает за выполнение рассчетов результатов считанных ранее действий и сохранения их в соответствующие элементы очереди
 		{
 			iElement *thisAction = actions->head;
+			//Указатель для выполнения работы с элементами очереди поочередно
 			if(actions->head->mode == 'v')
 			{
 				thisAction->resv = malloc(thisAction->size*sizeof(double));
+				//Выделение памяти для переменной с результатами вычислений
 				switch(actions->head->operation)
 				//switch для выполнения действия выбранного пользователем
 				{
@@ -168,7 +181,6 @@ int main(int argc,char *argv[])
 						{
 							thisAction->res = thisAction->a;
 							for(int i = 1;i<thisAction->b;i++) thisAction->res = thisAction->res*thisAction->a;
-							//Этот цикл рассчитывает результат
 							break;
 						}
 						else if(thisAction->b == 0)
@@ -210,14 +222,17 @@ int main(int argc,char *argv[])
 			}
 			queueAppend(data, thisAction);
 			nextElement(actions);
+			//Добавляем значения результатов в элементы очереди и переходим к следующим
 		}
 		free(actions);
+		//Освобождаем память от указателя на очередь за не надобностью
 		FILE *output = fopen (output_name,"w");
 		//Открываем файл для записи реезультатов
 		while(data->head != NULL)
 		//Этот цикл отвечает за запись результатов в файл в правильной форме
 		{
 			iElement *thisAction = data->head;
+			//Этот указатель нужен для работы с элементами очереди
 			if(data->head->mode == 'v')
 			{
 				switch(data->head->operation)
@@ -330,11 +345,10 @@ int main(int argc,char *argv[])
 			fprintf(output, "\n");
 			//Удаление элемента из списка
 			nextElement(data);
+			//Переход к следующему элементу
 		}
 		fclose(output);
 		//Закрытие файла для записи
-		free(actions);
-		//Освобождение памяти на указатель на наш список
 		printf("Результаты записаны в файл\n");
 		printf("Вычислить что-то еще?0-0\n");
 		printf("(Введите 'y' чтобы продолжить и ввести новые файлы для работы или любой другой символ чтобы закончить)");
