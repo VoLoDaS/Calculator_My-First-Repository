@@ -21,64 +21,34 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
-typedef struct listElement
-//Структура элемента списка(действие)
+typedef struct queueElement
+//Структура элемента очереди(действие)
 {
 	char operation, mode;
 	double *av, *bv, *resv;
 	int size;
 	double a, b, res;
-	struct listElement *nextElement;
+	struct queueElement *nextElement;
 } iElement;
-typedef struct list
-//Структура Список, имеет указатели на первый и текущий элемент
+typedef struct queue
+//Структура Очереди, имеет указатели на первый и текущий элемент
 {
 	iElement *head;
-	iElement *current;
-} list;
-iElement *nextElement(list *inList)
-//Функция для перехода к следующему элементу списка
+	iElement *last;
+} queue;
+iElement *nextElement(queue *inQueue)
+//Функция для получения первого элемента из очереди(головы)
 {
-	iElement *next = inList->current->nextElement;
-	inList->current =  next;
+	iElement *next = inQueue->head;
+	inQueue->head = inQueue->head->nextElement ;
 	return next;
 }
-int listAppend(list *inList, iElement *newElement)
-//Функция для добавления нового элемента в список
+int queueAppend(queue *inQueue, iElement *newElement)
+//Функция для добавления нового элемента в начало очереди
 {
-	if(inList->head == NULL)
-	{
-		inList->head = newElement;
-		inList->current = newElement;
-		return 0;
-	}
-	inList->current->nextElement = newElement;
-	inList->current = newElement;
-	return 0;
-}
-int goHeadElement(list *inList)
-//Функция для перехода из тукущего элемента списка к первому
-{
-	inList->current =  inList->head;
-	return 0;
-}
-int deleteElement(list *inList)
-//Функция для удаления элемента из списка
-{
-	iElement *delete = inList->current;
-	if(delete == inList->head)
-	{
-		inList->head = delete->nextElement;
-		nextElement(inList);
-	}
-	else
-	{
-		goHeadElement(inList);
-		while(inList->current->nextElement != delete) nextElement(inList);
-		inList->current->nextElement = delete->nextElement;
-		if(delete->nextElement != NULL) inList->current = delete->nextElement;
-	}
-	free(delete);
+	if(inQueue->head == NULL) inQueue->head = newElement;
+	if(inQueue->last != NULL) inQueue->last->nextElement = newElement;
+	inQueue->last = newElement;
 	return 0;
 }
 int main(int argc,char *argv[])
@@ -102,8 +72,8 @@ int main(int argc,char *argv[])
 		//Ввод имени файлов для чтения и записи
 		FILE *input = fopen (input_name,"r");
 		//Открытие файла для чтения
-		list *actions = calloc(1, sizeof(list));
-		//Выделение памяти для указателя на список
+		queue *actions = calloc(1, sizeof(queue));
+		//Выделение памяти для указателя на очередь
 		char operation, mode;
 		//Переменные для работы цикла while ниже, где проверяется наличие этих переменных в строке с действием
 		while(fscanf(input, " %c %c", &operation, &mode) != EOF)
@@ -133,15 +103,13 @@ int main(int argc,char *argv[])
 				if(operation != '!') fscanf(input, "%lf", &newAction->b);
 				//Если у нас проходит действие факториала, мы не считываем вторую переменную
 			}
-			listAppend(actions, newAction);
-			//Добавляем новый элемент в список
+			queueAppend(actions, newAction);
+			//Добавляем новый элемент в очередь
 		}
 		fclose(input);
 	    //После записи всех данных закрываем файл, чтобы не нагружать память
-		goHeadElement(actions);
-		//Возвращаемся в начало списка к первому элементу для дальнейшей последовательной работы
-		while(actions->current != NULL)
-		//Этот цикл отвечает за выполнение рассчетов результатов считанных ранее действий и сохранения их в соответствующие элементы списка
+		while(actions->head != NULL)
+		//Этот цикл отвечает за выполнение рассчетов результатов считанных ранее действий и сохранения их в соответствующие элементы очереди
 		{
 			iElement *thisAction = actions->current;
 			if(actions->current->mode == 'v')
@@ -245,13 +213,13 @@ int main(int argc,char *argv[])
 		//Возвращаемся в начало списка к первому элементу для дальнейшей последовательной работы
 		FILE *output = fopen (output_name,"w");
 		//Открываем файл для записи реезультатов
-		while(actions->current != NULL)
+		while(actions->head != NULL)
 		//Этот цикл отвечает за запись результатов в файл в правильной форме
 		{
-			iElement *thisAction = actions->current;
-			if(actions->current->mode == 'v')
+			iElement *thisAction = actions->head;
+			if(actions->head->mode == 'v')
 			{
-				switch(actions->current->operation)
+				switch(actions->head->operation)
 				//switch для выполнения действия выбранного пользователем
 				{
 					case '+':
@@ -297,9 +265,9 @@ int main(int argc,char *argv[])
 				free(thisAction->resv);
 				//Освобождение памяти
 			}
-			else if (actions->current->mode == 's')
+			else if (actions->head->mode == 's')
 			{
-				switch(actions->current->operation)
+				switch(actions-head->operation)
 				//Разбиваем на действия в зависимости от выбора пользователя
 				{
 					case '+':
@@ -370,7 +338,7 @@ int main(int argc,char *argv[])
 		printf("Вычислить что-то еще?0-0\n");
 		printf("(Введите 'y' чтобы продолжить и ввести новые файлы для работы или любой другой символ чтобы закончить)");
 		scanf(" %c",&reply);
-		//Вывод о завершении работы и вывод запроса на повторное выполнение
+		//Вывод о завершении работы и запроса на повторное выполнение
 	}
 	while(reply == 'y');
 	//Цикл while отвечает за повтор функции калькулятора
