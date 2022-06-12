@@ -51,7 +51,7 @@ iElement *nextElement(queue *inQueue)
 //Функция для получения первого элемента из очереди(головы)
 {
 	iElement *next = inQueue->head;
-	inQueue->head = inQueue->head->nextElement ;
+	inQueue->head = inQueue->head->nextElement;
 	return next;
 }
 int queueAppend(queue *inQueue, iElement *newElement)
@@ -60,6 +60,95 @@ int queueAppend(queue *inQueue, iElement *newElement)
 	if(inQueue->head == NULL) inQueue->head = newElement;
 	if(inQueue->last != NULL) inQueue->last->nextElement = newElement;
 	inQueue->last = newElement;
+	return 0;
+}
+typedef struct stackElement
+{
+	double iData;
+	struct stackElement *next;
+} stackElement;
+typedef struct stack
+{
+	stackElement *head;
+} stack;
+int pushElement(stack *thisStack, stackElement *thisElement)
+{
+	thisElement->next = thisStack->head;
+	thisStack->head = thisElement;
+	return 0;
+}
+stackElement *popElement(stack *thisStack)
+{
+	stackElement *st = *thisStack->head;
+	*thisStack->head = *thisStack->head->next;
+	return st;
+}
+int reverPolNot(char* string, iElement *out)
+{
+	stack *stack = calloc(1, sizeof(stack));
+	int numChar = 0;
+	for(int i = 0; string[i] != '\0'; i++) //пока не дойдём до конца строки
+	{
+		float aCode = string[i]; //ascii-код символа
+
+		if((aCode - 48 <10)&(aCode - 48 >=0)) //определяем, с числом ли имем дело (код нуля в acii - 48)
+		{
+			//если предыдущий символ тоже был числом, продолжаем "собирать" его поразрядно
+			if(numChar > 0) stack->head->iData = stack->head->iData*10 + (aCode - 48);
+			else if(numChar < 0)
+			{
+				stack->head->iData = stack->head->iData + (aCode - 48)/(degree(10, numChar*(-1)));
+				numChar -= 1;
+			}
+			else //если пердыдущие символ не был числом, добавляем новое число в стек
+			{
+			stackElement *next = calloc(1, sizeof(iElement));
+			next->iData = aCode - 48;
+			numChar = 1;
+			pushElement(stack, next);
+			}
+		}
+		else //если имеем дело с символом
+		{
+			stackElement *new = calloc(1, sizeof(stackElement));
+			switch (string[i])
+			{
+			case '.': //встретив точку после числа, готовимся дописывать дробную часть в след. итерациях
+				if(numChar > 0) numChar = -1;
+				break;
+			case '+': //если это символ операции, то берём из стека операнды и результат записываем обратно в стек
+				new->iData = popElement(stack)->iData + popElement(stack)->iData;
+				pushElement(stack, new);
+				break;
+			case '-':
+				new->iData = (popElement(stack)->iData - popElement(stack)->iData)*(-1);
+				pushElement(stack, new);
+				break;
+			case '*':
+				new->iData = popElement(stack)->iData*popElement(stack)->iData;
+				pushElement(stack, new);
+				break;
+			case '/':;
+				float second = popElement(stack)->iData;
+				new->iData = popElement(stack)->iData/second;
+				popElement(stack, new);
+				break;
+			case '!':
+				new->iData = factorial(popElement(stack)->iData);
+				pushElement(stack, new);
+				break;
+			case '^':;
+				float dSecond = popElement(stack)->iData;
+				new->iData = degree(popElement(stack)->iData, dSecond);
+				pushElement(stack, new);
+				break;
+			default:
+				numChar = 0;
+			}
+		}
+	}
+	out->res = stack->head->iData; //результат работы записываем в очередь на вывод
+	free(stack);
 	return 0;
 }
 int main(int argc,char *argv[])
