@@ -87,20 +87,19 @@ int reverPolNot(char* string, iElement *out)
 {
 	stack *stack = calloc(1, sizeof(stack));
 	int numChar = 0;
-	for(int i = 0; string[i] != '\0'; i++) //пока не дойдём до конца строки
+	for(int i = 0; string[i] != '\0'; i++)
 	{
-		float aCode = string[i]; //ascii-код символа
+		float aCode = string[i];
 
-		if((aCode - 48 <10)&(aCode - 48 >=0)) //определяем, с числом ли имем дело (код нуля в acii - 48)
+		if((aCode - 48 <10)&(aCode - 48 >=0))
 		{
-			//если предыдущий символ тоже был числом, продолжаем "собирать" его поразрядно
 			if(numChar > 0) stack->head->iData = stack->head->iData*10 + (aCode - 48);
 			else if(numChar < 0)
 			{
 				stack->head->iData = stack->head->iData + (aCode - 48)/(degree(10, numChar*(-1)));
 				numChar -= 1;
 			}
-			else //если пердыдущие символ не был числом, добавляем новое число в стек
+			else
 			{
 			stackElement *next = calloc(1, sizeof(iElement));
 			next->iData = aCode - 48;
@@ -108,15 +107,15 @@ int reverPolNot(char* string, iElement *out)
 			pushElement(stack, next);
 			}
 		}
-		else //если имеем дело с символом
+		else
 		{
 			stackElement *new = calloc(1, sizeof(stackElement));
 			switch (string[i])
 			{
-			case '.': //встретив точку после числа, готовимся дописывать дробную часть в след. итерациях
+			case '.':
 				if(numChar > 0) numChar = -1;
 				break;
-			case '+': //если это символ операции, то берём из стека операнды и результат записываем обратно в стек
+			case '+':
 				new->iData = popElement(stack)->iData + popElement(stack)->iData;
 				pushElement(stack, new);
 				break;
@@ -134,12 +133,53 @@ int reverPolNot(char* string, iElement *out)
 				popElement(stack, new);
 				break;
 			case '!':
-				new->iData = factorial(popElement(stack)->iData);
-				pushElement(stack, new);
-				break;
+				if(popElement(stack)->iData>0)
+				{
+					double rp;
+					rp = popElement(stack)->iData;
+					for(int i = 1;i<popElement(stack)->iData;i++) rp = rp*i;
+					popElement(stack)->iData = rp;
+					break;
+				}
+				else
+				{
+					if(popElement(stack)->iData==0)
+					{
+						popElement(stack)->iData = 1;
+						//В случае ввода факториала числа '0' переменная res
+						//принимает значение константы 1
+						break;
+					}
+					else
+					{
+						if(popElement(stack)->iData<0) break;
+					}
+					new->iData = popElement(stack)->iData;
+					pushElement(stack, new);
+					break;
+				}
 			case '^':;
-				float dSecond = popElement(stack)->iData;
-				new->iData = degree(popElement(stack)->iData, dSecond);
+				double dSecond = popElement(stack)->iData;
+				double rp;
+				if(dSecond>0)
+				{
+					rp = popElement(stack)->iData;
+					for(int i = 1;i<dSecond;i++) rp = rp*popElement(stack)->iData;
+					popElement(stack)->iData = rp;
+					break;
+				}
+				else if(dSecond == 0)
+				{
+				//Если степень равна нулю, то ответ равен 1
+					rp = 1;
+					popElement(stack)->iData = rp;
+					break;
+				}
+				else
+				{
+					break;
+				}
+				new->iData = popElement(stack)->iData;
 				pushElement(stack, new);
 				break;
 			default:
@@ -163,8 +203,9 @@ int main(int argc,char *argv[])
 		setvbuf(stderr, NULL, _IONBF, 0);
 		printf("Здравствуйте, я Калькулятор (^-^)\n");
 		printf("Прежде чем приступить к работе, советую прочитать README с инструкцией по использованию\n");
-		char input_name[259], output_name[259];
+		char input_name[259], output_name[259], modeNotation;
 		//Переменные для записи имени файлов
+		printf("Введите режим работы, с какой нотацией ")
 		printf("Введите название файла формата '.txt', из которого я буду брать данные:");
 		scanf("%s", input_name);
 		printf("Введите название файла формата '.txt', в который я запишу результаты:");
