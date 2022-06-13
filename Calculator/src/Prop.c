@@ -85,9 +85,9 @@ stackElement *popElement(stack *thisStack)
 	thisStack->head = thisStack->head->next;
 	return st;
 }
-int reverPolNot(char* string, iElement *out)
+void reverPolNot(char* string, iElement *out)
 {
-	stack *stack = calloc(1, sizeof(stack));
+	stack *stk = calloc(1, sizeof(stack));
 	int numChar = 0;
 	for(int i = 0; string[i] != '\0'; i++)
 	{
@@ -95,106 +95,55 @@ int reverPolNot(char* string, iElement *out)
 
 		if((aCode - 48 <10)&(aCode - 48 >=0))
 		{
-			if(numChar > 0) stack->head->iData = stack->head->iData*10 + (aCode - 48);
+			if(numChar > 0) stk->head->iData = stk->head->iData*10 + (aCode - 48);
 			else if(numChar < 0)
 			{
 				double w;
 				w = 10;
 				for(int i = 1;i<numChar*(-1);i++) w = w*10;
-				stack->head->iData = stack->head->iData + (aCode - 48)/w;
+				stk->head->iData = stk->head->iData + (aCode - 48)/w;
 				numChar -= 1;
 			}
 			else
 			{
-			stackElement *next = calloc(1, sizeof(iElement));
-			next->iData = aCode - 48;
+			stackElement *new = calloc(1, sizeof(stackElement));
+			new->iData = aCode - 48;
 			numChar = 1;
-			pushElement(stack, next);
+			pushElement(stk, new);
 			}
 		}
 		else
 		{
 			stackElement *new = calloc(1, sizeof(stackElement));
 			switch (string[i])
-			{
-			case '.':
-				if(numChar > 0) numChar = -1;
-				break;
-			case '+':
-				new->iData = popElement(stack)->iData + popElement(stack)->iData;
-				pushElement(stack, new);
-				break;
-			case '-':
-				new->iData = (popElement(stack)->iData - popElement(stack)->iData)*(-1);
-				pushElement(stack, new);
-				break;
-			case '*':
-				new->iData = popElement(stack)->iData*popElement(stack)->iData;
-				pushElement(stack, new);
-				break;
-			case '/':;
-				float second = popElement(stack)->iData;
-				new->iData = popElement(stack)->iData/second;
-				pushElement(stack, new);
-				break;
-			case '!':
-				if(popElement(stack)->iData>0)
 				{
-					double rp;
-					rp = popElement(stack)->iData;
-					for(int i = 1;i<popElement(stack)->iData;i++) rp = rp*i;
-					popElement(stack)->iData = rp;
+				case '.': //встретив точку после числа, готовимся дописывать дробную часть в след. итерациях
+					if(numChar > 0) numChar = -1;
 					break;
-				}
-				else
-				{
-					if(popElement(stack)->iData==0)
-					{
-						popElement(stack)->iData = 1;
-						//В случае ввода факториала числа '0' переменная res
-						//принимает значение константы 1
-						break;
-					}
-					else
-					{
-						if(popElement(stack)->iData<0) break;
-					}
-					new->iData = popElement(stack)->iData;
-					pushElement(stack, new);
+				case '+':
+					new->iData = popElement(stk)->iData + popElement(stk)->iData;
+					pushElement(stk, new);
 					break;
-				}
-			case '^':;
-				double dSecond = popElement(stack)->iData;
-				double rp;
-				if(dSecond>0)
-				{
-					rp = popElement(stack)->iData;
-					for(int i = 1;i<dSecond;i++) rp = rp*popElement(stack)->iData;
-					popElement(stack)->iData = rp;
+				case '-':
+					new->iData = (popElement(stk)->iData - popElement(stk)->iData)*(-1);
+					pushElement(stk, new);
 					break;
-				}
-				else if(dSecond == 0)
-				{
-				//Если степень равна нулю, то ответ равен 1
-					rp = 1;
-					popElement(stack)->iData = rp;
+				case '*':
+					new->iData = popElement(stk)->iData*popElement(stk)->iData;
+					pushElement(stk, new);
 					break;
-				}
-				else
-				{
+				case '/':;
+					float second = popElement(stk)->iData;
+					new->iData = popElement(stk)->iData/second;
+					pushElement(stk, new);
 					break;
+				default:
+					numChar = 0;
 				}
-				new->iData = popElement(stack)->iData;
-				pushElement(stack, new);
-				break;
-			default:
-				numChar = 0;
-			}
 		}
 	}
-	out->res = stack->head->iData; //результат работы записываем в очередь на вывод
-	free(stack);
-	return 0;
+	out->res = stk->head->iData; //результат работы записываем в очередь на вывод
+	free(stk);
 }
 int main(int argc,char *argv[])
 //Функция калькулятора
@@ -272,7 +221,10 @@ int main(int argc,char *argv[])
 		{
 			iElement *thisAction = actions->head;
 			//Указатель для выполнения работы с элементами очереди поочередно
-			if(modeNotation == 'r') reverPolNot(thisAction->str, thisAction);
+			if(modeNotation == 'r')
+			{
+				reverPolNot(thisAction->str, thisAction);
+			}
 			//Если пользователь выбрал режим для обработки данных в ОПН, то выполняется функция
 			else
 			{
