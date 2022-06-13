@@ -28,6 +28,7 @@ typedef struct queueElement
 	double *av, *bv, *resv;
 	int size;
 	double a, b, res;
+	char *str;
 	/*
 	 *operation - переменная отвечающая за символ действия
 	 *mode - переменная отвечающая за режим работы с действием, векторный или обычный
@@ -36,6 +37,7 @@ typedef struct queueElement
 	 *size - переменная отвечающая за размерность векторов
 	 *a, b - переменные отвечающие за хранение значений в обычном режиме
 	 *res - переменная для хранения результата действия между переменными
+	 *str - переменная для хранения строки для работы с ОПН
 	 */
 	struct queueElement *nextElement;
 } iElement;
@@ -79,8 +81,8 @@ int pushElement(stack *thisStack, stackElement *thisElement)
 }
 stackElement *popElement(stack *thisStack)
 {
-	stackElement *st = *thisStack->head;
-	*thisStack->head = *thisStack->head->next;
+	stackElement *st = thisStack->head;
+	thisStack->head = thisStack->head->next;
 	return st;
 }
 int reverPolNot(char* string, iElement *out)
@@ -96,7 +98,10 @@ int reverPolNot(char* string, iElement *out)
 			if(numChar > 0) stack->head->iData = stack->head->iData*10 + (aCode - 48);
 			else if(numChar < 0)
 			{
-				stack->head->iData = stack->head->iData + (aCode - 48)/(degree(10, numChar*(-1)));
+				double w;
+				w = 10;
+				for(int i = 1;i<numChar*(-1);i++) w = w*10;
+				stack->head->iData = stack->head->iData + (aCode - 48)/w;
 				numChar -= 1;
 			}
 			else
@@ -130,7 +135,7 @@ int reverPolNot(char* string, iElement *out)
 			case '/':;
 				float second = popElement(stack)->iData;
 				new->iData = popElement(stack)->iData/second;
-				popElement(stack, new);
+				pushElement(stack, new);
 				break;
 			case '!':
 				if(popElement(stack)->iData>0)
@@ -205,44 +210,56 @@ int main(int argc,char *argv[])
 		printf("Прежде чем приступить к работе, советую прочитать README с инструкцией по использованию\n");
 		char input_name[259], output_name[259], modeNotation;
 		//Переменные для записи имени файлов
-		printf("Введите режим работы, с какой нотацией ")
+		printf("Введите режим работы, с какой нотацией придется работать,\n");
+		printf("введите 'r', если с обратной польской или любой другой символ, если с префиксной:");
+		scanf(" %c", &modeNotation);
 		printf("Введите название файла формата '.txt', из которого я буду брать данные:");
 		scanf("%s", input_name);
 		printf("Введите название файла формата '.txt', в который я запишу результаты:");
 		scanf("%s", output_name);
 		//Ввод имени файлов для чтения и записи
-		FILE *input = fopen (input_name,"r");
+		FILE *input = fopen(input_name,"r");
 		//Открытие файла для чтения
 		queue *actions = calloc(1, sizeof(queue));
 		//Выделение памяти для указателя на очередь
 		char operation, mode;
 		//Переменные для работы цикла while ниже, где проверяется наличие этих переменных в строке с действием
-		while(fscanf(input, " %c %c", &operation, &mode) != EOF)
-	    //Этот while считывает строчки с данными из файла и добавляем в наш список
+		while(feof(input) == 0)
+	    //Этот while считывает строчки с данными из файла и добавляем в нашу очередь
 		{
 			iElement *newAction = calloc(1, sizeof(iElement));
-			//Выделяем память для указателя на новый элемент списка
-			newAction->operation = operation;
-			newAction->mode = mode;
-			//Присваиваем значения из нового элемента в переменные
-			if(mode == 'v')
-			//Проверяем символ введенный пользователем для выбора режима
+			//Выделяем память для указателя на новый элемент очереди
+			if(modeNotation == 'r')
 			{
-				fscanf(input, "%i", &newAction->size);
-				//Берем значение из файла для переменной size для нового элемента
-				newAction->av = malloc(newAction->size*sizeof(double));
-				newAction->bv = malloc(newAction->size*sizeof(double));
-				//Выделение памяти под координаты векторов
-				for(int i = 0; i<newAction->size; i++) fscanf(input, "%lf", &newAction->av[i]);
-				for(int i = 0; i<newAction->size; i++) fscanf(input, "%lf", &newAction->bv[i]);
-				//Циклы, отвечающие за ввод коодинат векторов
+				newAction->str = calloc(255, sizeof(char));
+				fgets(newAction->str, 255, input);
+				//Выделяем память и помещаем строку в переменную str для работы с ОПН
 			}
-			else if (mode == 's')
+			else
 			{
-				fscanf(input, "%lf", &newAction->a);
-				//Берем значение первой переменной из файла
-				if(operation != '!') fscanf(input, "%lf", &newAction->b);
-				//Если у нас проходит действие факториала, мы не считываем вторую переменную
+				fscanf(input, " %c %c", &operation, &mode);
+				newAction->operation = operation;
+				newAction->mode = mode;
+				//Присваиваем значения из нового элемента в переменные
+				if(mode == 'v')
+				//Проверяем символ введенный пользователем для выбора режима
+				{
+					fscanf(input, "%i", &newAction->size);
+					//Берем значение из файла для переменной size для нового элемента
+					newAction->av = malloc(newAction->size*sizeof(double));
+					newAction->bv = malloc(newAction->size*sizeof(double));
+					//Выделение памяти под координаты векторов
+					for(int i = 0; i<newAction->size; i++) fscanf(input, "%lf", &newAction->av[i]);
+					for(int i = 0; i<newAction->size; i++) fscanf(input, "%lf", &newAction->bv[i]);
+					//Циклы, отвечающие за ввод коодинат векторов
+				}
+				else if (mode == 's')
+				{
+					fscanf(input, "%lf", &newAction->a);
+					//Берем значение первой переменной из файла
+					if(operation != '!') fscanf(input, "%lf", &newAction->b);
+					//Если у нас проходит действие факториала, мы не считываем вторую переменную
+				}
 			}
 			queueAppend(actions, newAction);
 			//Добавляем новый элемент в очередь
@@ -255,99 +272,103 @@ int main(int argc,char *argv[])
 		{
 			iElement *thisAction = actions->head;
 			//Указатель для выполнения работы с элементами очереди поочередно
-			if(actions->head->mode == 'v')
+			if(modeNotation == 'r') reverPolNot(thisAction->str, thisAction);
+			//Если пользователь выбрал режим для обработки данных в ОПН, то выполняется функция
+			else
 			{
-				thisAction->resv = malloc(thisAction->size*sizeof(double));
-				//Выделение памяти для переменной с результатами вычислений
-				switch(actions->head->operation)
-				//switch для выполнения действия выбранного пользователем
+				if(actions->head->mode == 'v')
 				{
-					case '+':
-					//Блок отвечающий за сложение векторов
-						for(int i = 0; i<thisAction->size; i++) thisAction->resv[i] = thisAction->av[i]+thisAction->bv[i];
-						//Циклы, выполняющие действие и выводящие результат в правильном виде
-						break;
-					case '-':
-					//Блок отвечающий за вычитание векторов
-						for(int i = 0; i<thisAction->size; i++) thisAction->resv[i] = thisAction->av[i]-thisAction->bv[i];
-						//Циклы, выполняющие действие и выводящие результат в правильном виде
-						break;
-					case '*':
-					//Блок отвечающий за скалярное произведение векторов
-						for(int i = 0; i<thisAction->size; i++) thisAction->res += thisAction->av[i]*thisAction->bv[i];
-						//Циклы, выполняющие действие и выводящие результат в правильном виде
-						break;
-					default:
-						break;
+					thisAction->resv = malloc(thisAction->size*sizeof(double));
+					//Выделение памяти для переменной с результатами вычислений
+					switch(actions->head->operation)
+					//switch для выполнения действия выбранного пользователем
+					{
+						case '+':
+						//Блок отвечающий за сложение векторов
+							for(int i = 0; i<thisAction->size; i++) thisAction->resv[i] = thisAction->av[i]+thisAction->bv[i];
+							//Циклы, выполняющие действие и выводящие результат в правильном виде
+							break;
+						case '-':
+						//Блок отвечающий за вычитание векторов
+							for(int i = 0; i<thisAction->size; i++) thisAction->resv[i] = thisAction->av[i]-thisAction->bv[i];
+							//Циклы, выполняющие действие и выводящие результат в правильном виде
+							break;
+						case '*':
+						//Блок отвечающий за скалярное произведение векторов
+							for(int i = 0; i<thisAction->size; i++) thisAction->res += thisAction->av[i]*thisAction->bv[i];
+							//Циклы, выполняющие действие и выводящие результат в правильном виде
+							break;
+						default:
+							break;
+					}
 				}
-
-			}
-			else if (actions->head->mode == 's')
-			{
-				switch(actions->head->operation)
-				//Разбиваем на действия в зависимости от выбора пользователя
+				else if (actions->head->mode == 's')
 				{
-					case '+':
-					//Этот блок отвечает за выполнение операции сложения
-						thisAction->res = thisAction->a+thisAction->b;
-						//Пользователь вводит вторую переменную, после чего выводится ответ
-						break;
-					case '-':
-					//Этот блок отвечает за выполнение операции вычитания
-						thisAction->res = thisAction->a-thisAction->b;
-						break;
-					case '*':
-					//Этот блок отвечает за выполнение операции умножения
-						thisAction->res = thisAction->a*thisAction->b;
-						break;
-					case '/':
-					//Этот блок отвечает за выполнение операции деления
-						thisAction->res = thisAction->a/thisAction->b;
-						break;
-					case '^':
-					//Этот блок отвечает за выполнение операции возведения в степень
-					//может рассчитать только положительную целую степень
-						if(thisAction->b>0)
-						{
-							thisAction->res = thisAction->a;
-							for(int i = 1;i<thisAction->b;i++) thisAction->res = thisAction->res*thisAction->a;
+					switch(actions->head->operation)
+					//Разбиваем на действия в зависимости от выбора пользователя
+					{
+						case '+':
+						//Этот блок отвечает за выполнение операции сложения
+							thisAction->res = thisAction->a+thisAction->b;
+							//Пользователь вводит вторую переменную, после чего выводится ответ
 							break;
-						}
-						else if(thisAction->b == 0)
-						{
-						//Если степень равна нулю, то ответ равен 1
-							thisAction->res = 1;
+						case '-':
+						//Этот блок отвечает за выполнение операции вычитания
+							thisAction->res = thisAction->a-thisAction->b;
 							break;
-						}
-						else
-						{
+						case '*':
+						//Этот блок отвечает за выполнение операции умножения
+							thisAction->res = thisAction->a*thisAction->b;
 							break;
-						}
-					case '!':
-					//Этот блок отвечает за выполнение операции факториала
-						if(thisAction->a>0)
-						{
-							thisAction->res = thisAction->a;
-							for(int i = 1;i<thisAction->a;i++) thisAction->res = thisAction->res*i;
+						case '/':
+						//Этот блок отвечает за выполнение операции деления
+							thisAction->res = thisAction->a/thisAction->b;
 							break;
-						}
-						else
-						{
-							if(thisAction->a==0)
+						case '^':
+						//Этот блок отвечает за выполнение операции возведения в степень
+						//может рассчитать только положительную целую степень
+							if(thisAction->b>0)
 							{
+								thisAction->res = thisAction->a;
+								for(int i = 1;i<thisAction->b;i++) thisAction->res = thisAction->res*thisAction->a;
+								break;
+							}
+							else if(thisAction->b == 0)
+							{
+							//Если степень равна нулю, то ответ равен 1
 								thisAction->res = 1;
-								//В случае ввода факториала числа '0' переменная res
-								//принимает значение константы 1
 								break;
 							}
 							else
 							{
-								if(thisAction->a<0) break;
+								break;
 							}
+						case '!':
+						//Этот блок отвечает за выполнение операции факториала
+							if(thisAction->a>0)
+							{
+								thisAction->res = thisAction->a;
+								for(int i = 1;i<thisAction->a;i++) thisAction->res = thisAction->res*i;
+								break;
+							}
+							else
+							{
+								if(thisAction->a==0)
+								{
+									thisAction->res = 1;
+									//В случае ввода факториала числа '0' переменная res
+									//принимает значение константы 1
+									break;
+								}
+								else
+								{
+									if(thisAction->a<0) break;
+								}
+								break;
+							}
+						default:
 							break;
-						}
-					default:
-						break;
+					}
 				}
 			}
 			queueAppend(data, thisAction);
@@ -363,6 +384,9 @@ int main(int argc,char *argv[])
 		{
 			iElement *thisAction = data->head;
 			//Этот указатель нужен для работы с элементами очереди
+			if(modeNotation == 'r') fprintf(output, "%g\n", thisAction->res);
+			else
+			{
 			if(data->head->mode == 'v')
 			{
 				switch(data->head->operation)
@@ -473,7 +497,7 @@ int main(int argc,char *argv[])
 			else fprintf(output, "Неизвестный режим операций, пожалуйста, введите 'v' или 's'\n");
 			//Вывод, если символ типа, с какими данными предстоит работать не соответствует
 			fprintf(output, "\n");
-			//Удаление элемента из списка
+			}
 			nextElement(data);
 			//Переход к следующему элементу
 		}
