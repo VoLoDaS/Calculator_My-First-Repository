@@ -65,37 +65,48 @@ int queueAppend(queue *inQueue, iElement *newElement)
 	return 0;
 }
 typedef struct stackElement
+//Структура элемента Стека
 {
 	double iData;
+	//Переменная для хранения чисел из файла и ответа
 	struct stackElement *next;
 } stackElement;
 typedef struct stack
+//Структура Стек с указателем на вершину стека (голову)
 {
 	stackElement *head;
 } stack;
 int pushElement(stack *thisStack, stackElement *thisElement)
+//Функция для добавления нового элемента в стек
 {
 	thisElement->next = thisStack->head;
 	thisStack->head = thisElement;
 	return 0;
 }
 stackElement *popElement(stack *thisStack)
+//Функция для извлечения элемента из стека
 {
 	stackElement *st = thisStack->head;
 	thisStack->head = thisStack->head->next;
 	return st;
 }
-void reverPolNot(char* string, iElement *out)
+int reverPolNot(char* string, iElement *out)
+//Функция для работы с ОПН через стек, на вход получаем строку и указатель на текущий элемент
 {
 	stack *stk = calloc(1, sizeof(stack));
+	//Указатель на наш стек
 	int numChar = 0;
+	//Значение предыдущего символа
 	for(int i = 0; string[i] != '\0'; i++)
+    //Цикл для обработки всей строки
 	{
 		float aCode = string[i];
-
+		//Переменная для хранения ascii-кода текущего символа
 		if((aCode - 48 <10)&(aCode - 48 >=0))
+		//48 - код '0' в ascii таблице, проверяем чтобы этот символ был числом
 		{
 			if(numChar > 0) stk->head->iData = stk->head->iData*10 + (aCode - 48);
+			//Если предыдущий символ тоже был числом, продолжаем "собирать" его поразрядно
 			else if(numChar < 0)
 			{
 				double w;
@@ -105,6 +116,7 @@ void reverPolNot(char* string, iElement *out)
 				numChar -= 1;
 			}
 			else
+			//Если предыдущий символ не был числом, добавляем новое число в стек
 			{
 			stackElement *new = calloc(1, sizeof(stackElement));
 			new->iData = aCode - 48;
@@ -113,16 +125,20 @@ void reverPolNot(char* string, iElement *out)
 			}
 		}
 		else
+	    //Если текущий символ не число
 		{
 			stackElement *new = calloc(1, sizeof(stackElement));
 			switch (string[i])
+			//switch которым проходимся по всем символам строки
 				{
-				case '.': //встретив точку после числа, готовимся дописывать дробную часть в след. итерациях
+				case '.':
+				//встретив точку после числа, готовимся дописывать дробную часть в след. итерациях
 					if(numChar > 0) numChar = -1;
 					break;
 				case '+':
 					new->iData = popElement(stk)->iData + popElement(stk)->iData;
 					pushElement(stk, new);
+					//То есть мы добавляем в стек результат сложения первого и второго числа, с остальными аналогично
 					break;
 				case '-':
 					new->iData = (popElement(stk)->iData - popElement(stk)->iData)*(-1);
@@ -142,14 +158,16 @@ void reverPolNot(char* string, iElement *out)
 				}
 		}
 	}
-	out->res = stk->head->iData; //результат работы записываем в очередь на вывод
+	out->res = stk->head->iData;
+	//Результат работы записываем в очередь на вывод
 	free(stk);
+	return 0;
 }
 int main(int argc,char *argv[])
 //Функция калькулятора
 {
 	char reply;
-	//reply - глобальная переменная, используемая циклом while после функции
+	//reply - переменная, используемая циклом while после функции
 	do
     //Основной цикл, в котором производится работа с файлами, пока пользователь не завершит работу
 	{
@@ -158,10 +176,11 @@ int main(int argc,char *argv[])
 		printf("Здравствуйте, я Калькулятор (^-^)\n");
 		printf("Прежде чем приступить к работе, советую прочитать README с инструкцией по использованию\n");
 		char input_name[259], output_name[259], modeNotation;
-		//Переменные для записи имени файлов
+		//Переменные для записи имени файлов и режима нотации
 		printf("Введите режим работы, с какой нотацией придется работать,\n");
 		printf("введите 'r', если с обратной польской или любой другой символ, если с префиксной:");
 		scanf(" %c", &modeNotation);
+		//Выбор пользователем с какой нотацией предстоит работать
 		printf("Введите название файла формата '.txt', из которого я буду брать данные:");
 		scanf("%s", input_name);
 		printf("Введите название файла формата '.txt', в который я запишу результаты:");
@@ -282,7 +301,7 @@ int main(int argc,char *argv[])
 							if(thisAction->b>0)
 							{
 								thisAction->res = thisAction->a;
-								for(int i = 1;i<thisAction->b;i++) thisAction->res = thisAction->res*thisAction->a;
+								for(int i = 1;i<thisAction->b;i++) thisAction->res *= thisAction->a;
 								break;
 							}
 							else if(thisAction->b == 0)
@@ -291,33 +310,23 @@ int main(int argc,char *argv[])
 								thisAction->res = 1;
 								break;
 							}
-							else
-							{
-								break;
-							}
+							else break;
 						case '!':
 						//Этот блок отвечает за выполнение операции факториала
 							if(thisAction->a>0)
 							{
 								thisAction->res = thisAction->a;
-								for(int i = 1;i<thisAction->a;i++) thisAction->res = thisAction->res*i;
+								for(int i = 1;i<thisAction->a;i++) thisAction->res *= i;
 								break;
 							}
-							else
+							if(thisAction->a==0)
 							{
-								if(thisAction->a==0)
-								{
-									thisAction->res = 1;
-									//В случае ввода факториала числа '0' переменная res
-									//принимает значение константы 1
-									break;
-								}
-								else
-								{
-									if(thisAction->a<0) break;
-								}
+								thisAction->res = 1;
+								//В случае ввода факториала числа '0' переменная res
+								//принимает значение константы 1
 								break;
 							}
+							else break;
 						default:
 							break;
 					}
@@ -337,9 +346,8 @@ int main(int argc,char *argv[])
 			iElement *thisAction = data->head;
 			//Этот указатель нужен для работы с элементами очереди
 			if(modeNotation == 'r') fprintf(output, "%g\n", thisAction->res);
-			else
-			{
-			if(data->head->mode == 'v')
+			//Вывод ответа в файл
+			else if(data->head->mode == 'v')
 			{
 				switch(data->head->operation)
 				//switch для выполнения действия выбранного пользователем
@@ -448,13 +456,12 @@ int main(int argc,char *argv[])
 			}
 			else fprintf(output, "Неизвестный режим операций, пожалуйста, введите 'v' или 's'\n");
 			//Вывод, если символ типа, с какими данными предстоит работать не соответствует
-			fprintf(output, "\n");
-			}
 			nextElement(data);
 			//Переход к следующему элементу
 		}
 		fclose(output);
 		//Закрытие файла для записи
+		free(data);
 		printf("Результаты записаны в файл\n");
 		printf("Вычислить что-то еще?0-0\n");
 		printf("(Введите 'y' чтобы продолжить и ввести новые файлы для работы или любой другой символ чтобы закончить)");
