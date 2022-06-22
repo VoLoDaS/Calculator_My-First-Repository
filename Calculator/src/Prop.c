@@ -19,77 +19,11 @@
                          Язык интерфейса: Русский
  ============================================================================
  */
+#include "queue.h"
+#include "stack.h"
+#include "structs.h"
 #include <stdio.h>
 #include <stdlib.h>
-typedef struct queueElement
-//Структура элемента очереди(действие)
-{
-	char operation, mode;
-	double *av, *bv, *resv;
-	int size;
-	double a, b, res;
-	char *str;
-	/*
-	 *operation - переменная отвечающая за символ действия
-	 *mode - переменная отвечающая за режим работы с действием, векторный или обычный
-	 *av, bv - переменные для хранения значений векторов
-	 *resv - переменная для хранения результата действия между векторами
-	 *size - переменная отвечающая за размерность векторов
-	 *a, b - переменные отвечающие за хранение значений в обычном режиме
-	 *res - переменная для хранения результата действия между переменными
-	 *str - переменная для хранения строки для работы с ОПН
-	 */
-	struct queueElement *nextElement;
-} iElement;
-typedef struct queue
-//Структура Очереди, имеет указатели на первый и текущий элемент
-{
-	iElement *head;
-	//Указатель на на начало очереди (голову)
-	iElement *last;
-	//Указатель на конец очереди (хвост)
-} queue;
-iElement *nextElement(queue *inQueue)
-//Функция для получения первого элемента из очереди(головы)
-{
-	iElement *next = inQueue->head;
-	inQueue->head = inQueue->head->nextElement;
-	return next;
-}
-int queueAppend(queue *inQueue, iElement *newElement)
-//Функция для добавления нового элемента в начало очереди
-{
-	if(inQueue->head == NULL) inQueue->head = newElement;
-	if(inQueue->last != NULL) inQueue->last->nextElement = newElement;
-	inQueue->last = newElement;
-	return 0;
-}
-typedef struct stackElement
-//Структура элемента Стека
-{
-	double iData;
-	//Переменная для хранения чисел из файла и ответа
-	struct stackElement *next;
-} stackElement;
-typedef struct stack
-//Структура Стек с указателем на вершину стека (голову)
-{
-	stackElement *head;
-} stack;
-int pushElement(stack *thisStack, stackElement *thisElement)
-//Функция для добавления нового элемента в стек
-{
-	thisElement->next = thisStack->head;
-	thisStack->head = thisElement;
-	return 0;
-}
-stackElement *popElement(stack *thisStack)
-//Функция для извлечения элемента из стека
-{
-	stackElement *st = thisStack->head;
-	thisStack->head = thisStack->head->next;
-	return st;
-}
 int reverPolNot(char* string, iElement *out)
 //Функция для работы с ОПН через стек, на вход получаем строку и указатель на текущий элемент
 {
